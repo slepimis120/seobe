@@ -1,0 +1,11 @@
+services:
+  gh-actions-importer:
+    build:
+      context: .
+    container_name: gh-actions-importer
+    env_file:
+      - .env.local
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - .:/app
+    network_mode: host
