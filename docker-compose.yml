@@ -7,5 +7,4 @@ services:
       - .env.local
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - .:/app
     network_mode: host
