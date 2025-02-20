@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     docker.io \
     libicu-dev \
+    jq \
     && rm -rf /var/lib/apt/lists/*
 
 COPY .env.local /app/.env.local
