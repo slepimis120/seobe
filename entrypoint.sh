@@ -24,9 +24,6 @@ cd /app/output/audit
 REPO_FOLDER=$(find . -type d -mindepth 1 -maxdepth 1 -name "*$REPO*")
 YML_FILE=$(find "$REPO_FOLDER/.github/workflows/" -type f -name "*.yml" -print -quit)
 
-echo "Running Go script with path to YAML file"
-go run /app/seobe.go --path "$YML_FILE"
-
 if [ -n "$YML_FILE" ]; then
     WORKFLOW_CONTENT=$(cat "$YML_FILE" | base64 | tr -d '\n')
 
