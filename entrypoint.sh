@@ -12,8 +12,6 @@ gh actions-importer update
 echo "Running migrate..."
 gh actions-importer dry-run jenkins --output-dir output/audit --source-url "${JENKINS_INSTANCE_URL}/job/${JENKINS_JOB_NAME}" --custom-transformers transformers/*.rb --enable-features actions/cache
 
-gh actions-importer list-features
-
 echo "Creating new branch"
 sha=$(curl -s -H "Authorization: token $GITHUB_ACCESS_TOKEN" \
     "https://api.github.com/repos/$OWNER/$REPO/branches/$MAIN_BRANCH" | jq -r '.commit.sha')
@@ -41,16 +39,16 @@ if [ -n "$YML_FILE" ]; then
         "$API_URL"
 
     echo "Creating pull request"
-curl -X POST -H "Authorization: token $GITHUB_ACCESS_TOKEN" \
-    -d '{
-        "title": "Migrate Jenkins to GitHub Actions",
-        "head": "seobe/jenkins2github",
-        "base": "'$MAIN_BRANCH'",
-        "body": "This pull request migrates the Jenkins pipeline to GitHub Actions. **Brought to you by slepimis120/seobe**\n\n\
-## ✅ Migration Checklist\n\
-- [ ] Verify that workflow triggers (e.g., pull requests, commits) are correctly configured."
-    }' \
-    "https://api.github.com/repos/$OWNER/$REPO/pulls"
+    curl -X POST -H "Authorization: token $GITHUB_ACCESS_TOKEN" \
+        -d '{
+            "title": "Migrate Jenkins to GitHub Actions",
+            "head": "seobe/jenkins2github",
+            "base": "'$MAIN_BRANCH'",
+            "body": "This pull request migrates the Jenkins pipeline to GitHub Actions. **Brought to you by slepimis120/seobe**\n\n\
+    ## ✅ Migration Checklist\n\
+    - [ ] Verify that workflow triggers (e.g., pull requests, commits) are correctly configured."
+        }' \
+        "https://api.github.com/repos/$OWNER/$REPO/pulls"
 else
     echo "No .yml file found in the .github/workflows directory."
     exit 1
