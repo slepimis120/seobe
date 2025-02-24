@@ -10,7 +10,7 @@ echo "Updating GitHub Actions Importer..."
 gh actions-importer update
 
 echo "Running migrate..."
-gh actions-importer dry-run jenkins --output-dir output/audit --source-url "${JENKINS_INSTANCE_URL}/job/${JENKINS_JOB_NAME}"
+gh actions-importer dry-run jenkins --output-dir output/audit --source-url "${JENKINS_INSTANCE_URL}/job/${JENKINS_JOB_NAME}" --enable-features actions/cache
 
 echo "Creating new branch"
 sha=$(curl -s -H "Authorization: token $GITHUB_ACCESS_TOKEN" \
