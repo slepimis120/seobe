@@ -8,7 +8,6 @@ import (
 	"strings"
 )
 
-// detectIndentation određuje uvlaku "steps:" sekcije
 func detectIndentation(lines []string, stepsIndex int) string {
 	for i := stepsIndex + 1; i < len(lines); i++ {
 		line := lines[i]
@@ -16,19 +15,17 @@ func detectIndentation(lines []string, stepsIndex int) string {
 
 		if strings.HasPrefix(trimmed, "- name:") {
 			return line[:strings.Index(line, "- name:")]
-		} else if trimmed != "" { // Ako naiđe na nešto drugo, prekidamo
+		} else if trimmed != "" {
 			break
 		}
 	}
 	return lines[stepsIndex][:strings.Index(lines[stepsIndex], "steps:")+1]
 }
 
-// jobUsesMvnw proverava da li se u jobu koristi "./mvnw"
 func jobUsesMvnw(lines []string, stepsIndex int) bool {
 	for i := stepsIndex + 1; i < len(lines); i++ {
 		trimmed := strings.TrimSpace(lines[i])
 
-		// Prekini ako naiđeš na novu sekciju posle "steps:"
 		if strings.HasSuffix(trimmed, ":") && !strings.HasPrefix(trimmed, "- name:") {
 			break
 		}
@@ -40,20 +37,16 @@ func jobUsesMvnw(lines []string, stepsIndex int) bool {
 	return false
 }
 
-// removeDuplicateCheckout uklanja dupli poziv checkout i njegov - name: checkout
 func removeDuplicateCheckout(lines []string) []string {
 	var newLines []string
 	seenCheckout := false
 
 	for i := 0; i < len(lines); i++ {
 		line := lines[i]
-		// Proveri da li je linija "uses: actions/checkout"
 		if strings.Contains(line, "uses: actions/checkout") {
 			if seenCheckout {
-				// Preskoči dupli checkout
-				// Takođe preskoči prethodnu liniju koja je "- name: checkout"
 				if len(newLines) > 0 && strings.Contains(newLines[len(newLines)-1], "- name: checkout") {
-					newLines = newLines[:len(newLines)-1] // Obrisati prethodni "- name: checkout"
+					newLines = newLines[:len(newLines)-1]
 				}
 				continue
 			}
@@ -94,8 +87,17 @@ func main() {
 		newLines = append(newLines, lines[i])
 
 		if strings.TrimSpace(lines[i]) == "steps:" {
-			if jobUsesMvnw(lines, i) { // Proveri da li job koristi mvnw
+			if jobUsesMvnw(lines, i) {
 				stepsIndent := detectIndentation(lines, i)
+
+				jdkStep := fmt.Sprintf(`%s- name: Set up JDK
+%s  uses: actions/setup-java@v3
+%s  with:
+%s    distribution: 'temurin'
+%s    java-version: '21'`, stepsIndent, stepsIndent, stepsIndent, stepsIndent, stepsIndent)
+
+				newLines = append(newLines, jdkStep)
+				log.Println("Added JDK setup step for a job using mvnw.")
 
 				cacheStep := fmt.Sprintf(`%s- name: Cache Maven dependencies
 %s  uses: actions/cache@v4
@@ -111,7 +113,6 @@ func main() {
 		}
 	}
 
-	// Ukloni dupli checkout pozive i "- name: checkout"
 	newLines = removeDuplicateCheckout(newLines)
 
 	ymlContent = strings.Join(newLines, "\n")
@@ -121,6 +122,6 @@ func main() {
 		log.Fatalf("Failed to write file: %v", err)
 	}
 
-	log.Println("Cache step successfully added where necessary.")
+	log.Println("JDK setup and cache step successfully added where necessary.")
 	fmt.Println(ymlContent)
 }
