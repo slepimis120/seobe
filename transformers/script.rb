@@ -5,10 +5,7 @@ transform "script" do |item|
     script_command = script_block["value"]["value"]
 
     script_command = script_command.sub(/^sh /, "").sub(/^bash /, "")
-
-
     {
-      name: "set execute permission",
       run: script_command
     }
   else

@@ -25,7 +25,6 @@ func detectIndentation(lines []string, stepsIndex int) string {
 func jobUsesMvnw(lines []string, stepsIndex int) bool {
 	for i := stepsIndex + 1; i < len(lines); i++ {
 		trimmed := strings.TrimSpace(lines[i])
-
 		if strings.HasSuffix(trimmed, ":") && !strings.HasPrefix(trimmed, "- name:") {
 			break
 		}
@@ -50,10 +49,8 @@ func removeDuplicateCheckout(lines []string) []string {
 		if i > 2 && strings.Contains(line, "- name: checkout") && strings.Contains(lines[i-2], "- name: checkout") {
 			continue
 		}
-
 		newLines = append(newLines, line)
 	}
-
 	return newLines
 }
 
@@ -97,7 +94,6 @@ func main() {
 
 				newLines = append(newLines, jdkStep)
 				log.Println("Added JDK setup step for a job using mvnw.")
-
 				cacheStep := fmt.Sprintf(`%s- name: Cache Maven dependencies
 %s  uses: actions/cache@v4
 %s  with:

@@ -10,7 +10,7 @@ echo "Updating GitHub Actions Importer..."
 gh actions-importer update
 
 echo "Running migrate..."
-gh actions-importer dry-run jenkins --output-dir output/audit --source-url "${JENKINS_INSTANCE_URL}/job/${JENKINS_JOB_NAME}" --enable-features actions/cache
+gh actions-importer dry-run jenkins --output-dir output/audit --source-url "${JENKINS_INSTANCE_URL}/job/${JENKINS_JOB_NAME}" --custom-transformers transformers/*.rb --enable-features actions/cache
 
 echo "Creating new branch"
 sha=$(curl -s -H "Authorization: token $GITHUB_ACCESS_TOKEN" \
@@ -23,6 +23,9 @@ curl -X POST -H "Authorization: token $GITHUB_ACCESS_TOKEN" \
 cd /app/output/audit
 REPO_FOLDER=$(find . -type d -mindepth 1 -maxdepth 1 -name "*$REPO*")
 YML_FILE=$(find "$REPO_FOLDER/.github/workflows/" -type f -name "*.yml" -print -quit)
+
+echo "Running Go script with path to YAML file"
+go run /app/seobe.go --path "$YML_FILE"
 
 if [ -n "$YML_FILE" ]; then
     WORKFLOW_CONTENT=$(cat "$YML_FILE" | base64 | tr -d '\n')
@@ -40,13 +43,16 @@ if [ -n "$YML_FILE" ]; then
 
     echo "Creating pull request"
     curl -X POST -H "Authorization: token $GITHUB_ACCESS_TOKEN" \
-        -d '{
-                "title": "Migrate Jenkins to GitHub Actions",
-                "head": "seobe/jenkins2github",
-                "base": "'$MAIN_BRANCH'",
-                "body": "This pull request migrates the Jenkins pipeline to GitHub Actions. Brought to you by **slepimis120/seobe**"
-            }' \
+        -H "Accept: application/vnd.github.v3+json" \
+        -d "{
+            \"title\": \"Migrate Jenkins to GitHub Actions\",
+            \"head\": \"seobe/jenkins2github\",
+            \"base\": \"$MAIN_BRANCH\",
+            \"body\": \"This pull request migrates the Jenkins pipeline to GitHub Actions. **Brought to you by slepimis120/seobe**\\n\\n✅ Migration Checklist:\\n- [ ] Verify that workflow triggers (e.g. pull requests, commits) are correctly configured.\"
+        }" \
         "https://api.github.com/repos/$OWNER/$REPO/pulls"
+
+
 else
     echo "No .yml file found in the .github/workflows directory."
     exit 1
