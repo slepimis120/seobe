@@ -4,8 +4,8 @@ transform "script" do |item|
   if script_block && script_block["value"]["isLiteral"]
     script_command = script_block["value"]["value"]
 
+    script_command = script_command.sub(/^sh /, "").sub(/^bash /, "")
     {
-      name: "Run script command",
       run: script_command
     }
   else
