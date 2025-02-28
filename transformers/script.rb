@@ -4,7 +4,10 @@ transform "script" do |item|
   if script_block && script_block["value"]["isLiteral"]
     script_command = script_block["value"]["value"]
 
-    script_command = script_command.sub(/^sh /, "").sub(/^bash /, "")
+    script_command = script_command.sub(/^sh /, "").sub(/^bash /, "").strip
+
+    script_command = script_command.gsub(/'/, "")
+
     {
       run: script_command
     }
